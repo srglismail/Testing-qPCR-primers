@@ -1,0 +1,247 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+# Installing the nessasary libraries!
+
+Tidyverse, Readr, Here, and Janitor (has simple little tools for examining and cleaning dirty data)
+
+```{r}
+library(tidyverse)
+library(readr)
+library(here)
+library(janitor)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+# importing the dataset for the qPCR exel files
+
+I used the following code but n_max function did the same as the following
+
+mixprime$drop <- seq(1, 64, by=1)
+mixprime <- mixprime[!(mixprime$drop== c(61:64)),]
+mixprime <- mixprime %>% select (-c(drop))
+
+```{r}
+
+mixprime <- read_delim("24 09 2021 mix primer.txt", 
+    "\t", escape_double = FALSE, trim_ws = TRUE, skip = 10, n_max = 60)
+mixprime <- janitor::remove_empty(mixprime)
+mixprime$Ct <- as.numeric(mixprime$Ct, digits = 4, is.numeric = TRUE)
+mixprime
+```
+
+I did the same for the mix primer qPCR data.
+
+hexamers$drop <- seq(1, 64, by=1)
+hexamers <- hexamers[!(hexamers$drop== c(61:64)),]
+hexamers <- hexamers %>% select (-c(drop, NAW, EAF))
+
+```{r}
+
+hexamers <- read_delim("24 09 2021 hexamers.txt", 
+    "\t", escape_double = FALSE, trim_ws = TRUE, skip = 10, n_max = 60)
+hexamers <- janitor::remove_empty(hexamers)
+hexamers <- hexamers %>% select (-c( NAW, EAF))
+hexamers
+hexamers$Ct <- as.numeric(hexamers$Ct, digits = 4, is.numeric = TRUE)
+
+
+
+```
+
+
+```{r}
+hexamers <- mutate(hexamers, SamP = `Sample Name` )
+hexamers <- rename(hexamers, Strain = `Sample Name` )
+
+hexamers <- hexamers %>% mutate(Strain = case_when(
+Strain == "C1" ~ "Lnt2_WT_df1", Strain == "D1" ~ "Lnt2_WT_df1",
+Strain == "E1" ~ "Lnt2_WT_df1", Strain == "C7" ~ "Lnt2_WT_df2",
+Strain == "D7" ~ "Lnt2_WT_df2", Strain == "E7" ~ "Lnt2_WT_df2",
+
+Strain == "C2" ~ "Lnt_WT_df1", Strain == "D2" ~ "Lnt_WT_df1",
+Strain == "E2" ~ "Lnt_WT_df1", Strain == "C8" ~ "Lnt_WT_df2",
+Strain == "D8" ~ "Lnt_WT_df2", Strain == "E8" ~ "Lnt_WT_df2",
+
+Strain == "C3" ~ "ybeY_WT_df1", Strain == "D3" ~ "ybeY_WT_df1",
+Strain == "E3" ~ "ybeY_WT_df1", Strain == "C9" ~ "ybeY_WT_df2",
+Strain == "D9" ~ "ybeY_WT_df2", Strain == "E9" ~ "ybeY_WT_df2",
+
+Strain == "C4" ~ "ybeZ_WT_df1", Strain == "D4" ~ "ybeZ_WT_df1",
+Strain == "E4" ~ "ybeZ_WT_df1", Strain == "C10" ~ "ybeZ_WT_df2",
+Strain == "D10" ~ "ybeZ_WT_df2", Strain == "E10" ~ "ybeZ_WT_df2",
+
+Strain == "C5" ~ "ybeZY_WT_df1", Strain == "D5" ~ "ybeZY_WT_df1",
+Strain == "E5" ~ "ybeZY_WT_df1", Strain == "C11" ~ "ybeZY_WT_df2",
+Strain == "D11" ~ "ybeZY_WT_df2", Strain == "E11" ~ "ybeZY_WT_df2",
+
+Strain == "C13" ~ "Lnt2_X_df1", Strain == "D13" ~ "Lnt2_X_df1",
+Strain == "E13" ~ "Lnt2_X_df1", Strain == "C19" ~ "Lnt2_X_df2",
+Strain == "D19" ~ "Lnt2_X_df2", Strain == "E19" ~ "Lnt2_X_df2",
+
+Strain == "C14" ~ "Lnt_X_df1", Strain == "D14" ~ "Lnt_X_df1",
+Strain == "E14" ~ "Lnt_X_df1", Strain == "C20" ~ "Lnt_X_df2",
+Strain == "D20" ~ "Lnt_X_df2", Strain == "E20" ~ "Lnt_X_df2",
+
+Strain == "C15" ~ "ybeY_X_df1", Strain == "D15" ~ "ybeY_X_df1",
+Strain == "E15" ~ "ybeY_X_df1", Strain == "C21" ~ "ybeY_X_df2",
+Strain == "D21" ~ "ybeY_X_df2", Strain == "E21" ~ "ybeY_X_df2",
+
+Strain == "C16" ~ "ybeZ_X_df1", Strain == "D16" ~ "ybeZ_X_df1",
+Strain == "E16" ~ "ybeZ_X_df1", Strain == "C22" ~ "ybeZ_X_df2",
+Strain == "D22" ~ "ybeZ_X_df2", Strain == "E22" ~ "ybeZ_X_df2",
+
+Strain == "C17" ~ "ybeZY_X_df1", Strain == "D17" ~ "ybeZY_X_df1",
+Strain == "E17" ~ "ybeZY_X_df1", Strain == "C23" ~ "ybeZY_X_df2",
+Strain == "D23" ~ "ybeZY_X_df2", Strain == "E23" ~ "ybeZY_X_df2"
+))
+
+```
+
+
+filter(hexamers, !is.na(Strain))
+hexamers <- hexamers %>% drop_na(Strain) %>%  group_by(SamP)
+
+
+# unite function
+Convenience function to paste together multiple columns into one.
+
+
+```{r}
+
+hexamers <- hexamers %>% mutate( Gene = case_when(Strain %in% c("Lnt2_WT_df1", "Lnt2_WT_df2", "Lnt_WT_df1", "Lnt_WT_df2", "Lnt2_X_df1", "Lnt2_X_df2", "Lnt_X_df1", "Lnt_X_df2") ~ "lnt", Strain %in% c("ybeY_WT_df1", "ybeY_WT_df2", "ybeY_X_df1", "ybeY_X_df2") ~ "ybeY", Strain %in% c("ybeZ_WT_df1", "ybeZ_WT_df2", "ybeZ_X_df1", "ybeZ_X_df2") ~ "ybeZ", Strain %in% c("ybeZY_WT_df1", "ybeZY_WT_df2", "ybeZY_X_df1", "ybeZY_X_df2") ~ "ybeZY"
+                   ),
+  
+Bacteria = case_when(Strain %in% c("Lnt2_WT_df1", "Lnt2_WT_df2", "Lnt_WT_df1", "Lnt_WT_df2", "ybeY_WT_df1", "ybeY_WT_df2","ybeZ_WT_df1", "ybeZ_WT_df2", "ybeZY_WT_df1", "ybeZY_WT_df2") ~ "WT",
+                     Strain %in% c("Lnt2_X_df1", "Lnt2_X_df2", "Lnt_X_df1", "Lnt_X_df2", "ybeY_X_df1", "ybeY_X_df2","ybeZ_X_df1", "ybeZ_X_df2", "ybeZY_X_df1", "ybeZY_X_df2") ~ "ybeX"),
+
+Replika = case_when(Strain %in% c("Lnt2_WT_df1", "Lnt_WT_df1", "ybeY_WT_df1", "ybeZ_WT_df1", "ybeZY_WT_df1",  "Lnt2_X_df1", "Lnt_X_df1", "ybeY_X_df1", "ybeZ_X_df1", "ybeZY_X_df1") ~ "df1", 
+                    Strain %in% c( "Lnt2_WT_df2", "Lnt_WT_df2", "ybeY_WT_df2", "ybeZ_WT_df2", "ybeZY_WT_df2", "Lnt2_X_df2", "Lnt_X_df2", "Lnt_X_df2", "ybeY_X_df2", "ybeY_X_df2", "ybeZ_X_df2", "ybeZY_X_df2") ~ "df2" ))
+
+hexamers <- mutate(hexamers, Primer ="Hexaprimer")
+
+```
+
+
+library(ggplot2)
+# create data
+names=c(rep("A", 20) , rep("B", 8) , rep("C", 30), rep("D", 80))
+value=c( sample(2:5, 20 , replace=T) , sample(4:10, 8 , replace=T), sample(1:7, 30 , replace=T), sample(3:8, 80 , replace=T) )
+data=data.frame(names,value)
+
+# plot
+ggplot(data, aes(x=names, y=value, fill=names)) +
+    geom_boxplot(alpha=0.7) +
+    stat_summary(fun.y=mean, geom="point", shape=20, size=14, color="red", fill="red") +
+    theme(legend.position="none") +
+    scale_fill_brewer(palette="Set1")
+
+df <- filter(df, C != "Foo")
+
+
+
+```{r}
+ggplot(data = hexamers)+
+  geom_point(mapping = aes(x=Gene, y=Ct, color=Replika))+
+  facet_wrap(~ Bacteria)
+```
+
+
+
+```{r}
+ggplot(data = hexamers, aes(x = Gene, y = Ct, color =Replika)) + 
+  stat_summary(fun=mean, geom = "point")+
+  facet_wrap(~Bacteria)
+```
+
+```{r}
+mixprime <- mutate(mixprime, SamP = `Sample Name` )
+mixprime <- rename(mixprime, Strain = `Sample Name` )
+
+mixprime <- mixprime %>% mutate(Strain = case_when(
+Strain == "C1" ~ "Lnt2_WT_df1", Strain == "D1" ~ "Lnt2_WT_df1",
+Strain == "E1" ~ "Lnt2_WT_df1", Strain == "C7" ~ "Lnt2_WT_df2",
+Strain == "D7" ~ "Lnt2_WT_df2", Strain == "E7" ~ "Lnt2_WT_df2",
+
+Strain == "C2" ~ "Lnt_WT_df1", Strain == "D2" ~ "Lnt_WT_df1",
+Strain == "E2" ~ "Lnt_WT_df1", Strain == "C8" ~ "Lnt_WT_df2",
+Strain == "D8" ~ "Lnt_WT_df2", Strain == "E8" ~ "Lnt_WT_df2",
+
+Strain == "C3" ~ "ybeY_WT_df1", Strain == "D3" ~ "ybeY_WT_df1",
+Strain == "E3" ~ "ybeY_WT_df1", Strain == "C9" ~ "ybeY_WT_df2",
+Strain == "D9" ~ "ybeY_WT_df2", Strain == "E9" ~ "ybeY_WT_df2",
+
+Strain == "C4" ~ "ybeZ_WT_df1", Strain == "D4" ~ "ybeZ_WT_df1",
+Strain == "E4" ~ "ybeZ_WT_df1", Strain == "C10" ~ "ybeZ_WT_df2",
+Strain == "D10" ~ "ybeZ_WT_df2", Strain == "E10" ~ "ybeZ_WT_df2",
+
+Strain == "C5" ~ "ybeZY_WT_df1", Strain == "D5" ~ "ybeZY_WT_df1",
+Strain == "E5" ~ "ybeZY_WT_df1", Strain == "C11" ~ "ybeZY_WT_df2",
+Strain == "D11" ~ "ybeZY_WT_df2", Strain == "E11" ~ "ybeZY_WT_df2",
+
+Strain == "C13" ~ "Lnt2_X_df1", Strain == "D13" ~ "Lnt2_X_df1",
+Strain == "E13" ~ "Lnt2_X_df1", Strain == "C19" ~ "Lnt2_X_df2",
+Strain == "D19" ~ "Lnt2_X_df2", Strain == "E19" ~ "Lnt2_X_df2",
+
+Strain == "C14" ~ "Lnt_X_df1", Strain == "D14" ~ "Lnt_X_df1",
+Strain == "E14" ~ "Lnt_X_df1", Strain == "C20" ~ "Lnt_X_df2",
+Strain == "D20" ~ "Lnt_X_df2", Strain == "E20" ~ "Lnt_X_df2",
+
+Strain == "C15" ~ "ybeY_X_df1", Strain == "D15" ~ "ybeY_X_df1",
+Strain == "E15" ~ "ybeY_X_df1", Strain == "C21" ~ "ybeY_X_df2",
+Strain == "D21" ~ "ybeY_X_df2", Strain == "E21" ~ "ybeY_X_df2",
+
+Strain == "C16" ~ "ybeZ_X_df1", Strain == "D16" ~ "ybeZ_X_df1",
+Strain == "E16" ~ "ybeZ_X_df1", Strain == "C22" ~ "ybeZ_X_df2",
+Strain == "D22" ~ "ybeZ_X_df2", Strain == "E22" ~ "ybeZ_X_df2",
+
+Strain == "C17" ~ "ybeZY_X_df1", Strain == "D17" ~ "ybeZY_X_df1",
+Strain == "E17" ~ "ybeZY_X_df1", Strain == "C23" ~ "ybeZY_X_df2",
+Strain == "D23" ~ "ybeZY_X_df2", Strain == "E23" ~ "ybeZY_X_df2"
+))
+```
+
+
+```{r}
+
+mixprime <- mixprime %>% mutate( Gene = case_when(Strain %in% c("Lnt2_WT_df1", "Lnt2_WT_df2", "Lnt_WT_df1", "Lnt_WT_df2", "Lnt2_X_df1", "Lnt2_X_df2", "Lnt_X_df1", "Lnt_X_df2") ~ "lnt", Strain %in% c("ybeY_WT_df1", "ybeY_WT_df2", "ybeY_X_df1", "ybeY_X_df2") ~ "ybeY", Strain %in% c("ybeZ_WT_df1", "ybeZ_WT_df2", "ybeZ_X_df1", "ybeZ_X_df2") ~ "ybeZ", Strain %in% c("ybeZY_WT_df1", "ybeZY_WT_df2", "ybeZY_X_df1", "ybeZY_X_df2") ~ "ybeZY"
+                   ),
+  
+Bacteria = case_when(Strain %in% c("Lnt2_WT_df1", "Lnt2_WT_df2", "Lnt_WT_df1", "Lnt_WT_df2", "ybeY_WT_df1", "ybeY_WT_df2","ybeZ_WT_df1", "ybeZ_WT_df2", "ybeZY_WT_df1", "ybeZY_WT_df2") ~ "WT",
+                     Strain %in% c("Lnt2_X_df1", "Lnt2_X_df2", "Lnt_X_df1", "Lnt_X_df2", "ybeY_X_df1", "ybeY_X_df2","ybeZ_X_df1", "ybeZ_X_df2", "ybeZY_X_df1", "ybeZY_X_df2") ~ "ybeX"),
+
+Replika = case_when(Strain %in% c("Lnt2_WT_df1", "Lnt_WT_df1", "ybeY_WT_df1", "ybeZ_WT_df1", "ybeZY_WT_df1",  "Lnt2_X_df1", "Lnt_X_df1", "ybeY_X_df1", "ybeZ_X_df1", "ybeZY_X_df1") ~ "df1", 
+                    Strain %in% c( "Lnt2_WT_df2", "Lnt_WT_df2", "ybeY_WT_df2", "ybeZ_WT_df2", "ybeZY_WT_df2", "Lnt2_X_df2", "Lnt_X_df2", "Lnt_X_df2", "ybeY_X_df2", "ybeY_X_df2", "ybeZ_X_df2", "ybeZY_X_df2") ~ "df2" ))
+
+mixprime <- mutate(mixprime, Primer ="Mprimer")
+```
+
+
+```{r}
+ggplot(data = mixprime)+
+  geom_point(mapping = aes(x=Gene, y=Ct, color=Replika))+
+  facet_wrap(~ Bacteria)
+```
+
+```{r}
+dfbound <- rbind(hexamers, mixprime)
+```
+
+
+```{r}
+ggplot(data = dfbound)+
+  geom_point(mapping = aes(x=Gene, y=Ct, color=Primer))+
+  facet_wrap(~Bacteria)
+```
+
