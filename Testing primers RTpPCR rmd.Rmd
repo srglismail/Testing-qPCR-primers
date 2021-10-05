@@ -34,10 +34,11 @@ mixprime <- mixprime %>% select (-c(drop))
 
 ```{r}
 
-mixprime <- read_delim("24 09 2021 mix primer.txt", 
+mixprime <- read_delim("Data/24 09 2021 mix primer.txt", 
     "\t", escape_double = FALSE, trim_ws = TRUE, skip = 10, n_max = 60)
 mixprime <- janitor::remove_empty(mixprime)
 mixprime$Ct <- as.numeric(mixprime$Ct, digits = 4, is.numeric = TRUE)
+mixprime <- rename(mixprime,  TmValue = `Tm Value`)
 mixprime
 ```
 
@@ -49,10 +50,11 @@ hexamers <- hexamers %>% select (-c(drop, NAW, EAF))
 
 ```{r}
 
-hexamers <- read_delim("24 09 2021 hexamers.txt", 
+hexamers <- read_delim("Data/24 09 2021 hexamers.txt", 
     "\t", escape_double = FALSE, trim_ws = TRUE, skip = 10, n_max = 60)
 hexamers <- janitor::remove_empty(hexamers)
 hexamers <- hexamers %>% select (-c( NAW, EAF))
+hexamers <- rename(hexamers,  TmValue = `Tm Value`)
 hexamers
 hexamers$Ct <- as.numeric(hexamers$Ct, digits = 4, is.numeric = TRUE)
 
@@ -224,7 +226,7 @@ Bacteria = case_when(Strain %in% c("Lnt2_WT_df1", "Lnt2_WT_df2", "Lnt_WT_df1", "
 Replika = case_when(Strain %in% c("Lnt2_WT_df1", "Lnt_WT_df1", "ybeY_WT_df1", "ybeZ_WT_df1", "ybeZY_WT_df1",  "Lnt2_X_df1", "Lnt_X_df1", "ybeY_X_df1", "ybeZ_X_df1", "ybeZY_X_df1") ~ "df1", 
                     Strain %in% c( "Lnt2_WT_df2", "Lnt_WT_df2", "ybeY_WT_df2", "ybeZ_WT_df2", "ybeZY_WT_df2", "Lnt2_X_df2", "Lnt_X_df2", "Lnt_X_df2", "ybeY_X_df2", "ybeY_X_df2", "ybeZ_X_df2", "ybeZY_X_df2") ~ "df2" ))
 
-mixprime <- mutate(mixprime, Primer ="Mprimer")
+mixprime <- mutate(mixprime, Primer ="Mixprimer")
 ```
 
 
@@ -244,4 +246,75 @@ ggplot(data = dfbound)+
   geom_point(mapping = aes(x=Gene, y=Ct, color=Primer))+
   facet_wrap(~Bacteria)
 ```
+
+```{r}
+ggplot(data = dfbound)+
+  geom_point(mapping = aes(x=Gene, y=TmValue, color=Primer))+
+  facet_wrap(~Bacteria)
+```
+
+```{r}
+ggplot(data = dfbound)+
+  geom_point(mapping = aes(x=Gene, y=TmValue, color=Primer))+
+  facet_wrap(~Replika)
+```
+
+
+
+```{r}
+hexamers_summarised <- hexamers %>% 
+  group_by(Gene) %>% 
+  summarise(N = n())
+hexamers_summarised
+```
+
+```{r}
+mixprime_summarised <- mixprime %>% 
+  group_by(Gene) %>% 
+  summarise(N = n())
+mixprime_summarised
+```
+
+```{r}
+ggplot(data = dfbound) + 
+  stat_summary(
+    mapping = aes(x = Gene, y = Ct, color= Bacteria),
+    fun.min = min,
+    fun.max = max,
+    fun = mean)+
+  facet_wrap(~Replika)
+```
+
+
+```{r}
+ggplot(data = dfbound) + 
+  stat_summary(
+    mapping = aes(x = Gene, y = Ct, color= Bacteria),
+    fun.min = min,
+    fun.max = max,
+    fun = mean)+
+  facet_wrap(~Primer)
+```
+
+```{r}
+library(ggdist)
+```
+
+
+
+```{r}
+
+ggplot(data = dfbound) + 
+  stat_halfeye(
+    mapping = aes(x = Gene, y = Ct, color= Bacteria))
+```
+
+
+
+
+
+
+
+
+
 
